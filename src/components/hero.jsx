@@ -3,6 +3,7 @@ import { Brain, ArrowRight, TrendingUp, Zap } from 'lucide-react';
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import logo from "/assets/logo.png";
+import RobotHeroFace from './RobotHeroFace';
 
 const Hero = () => {
   const canvasRef = useRef(null);
@@ -136,15 +137,15 @@ const Hero = () => {
         }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 w-full py-20 lg:py-28">
+      <div className="relative max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 w-full py-16 lg:py-28">
         <motion.div
           variants={stagger}
           initial="hidden"
           animate="show"
-          className="flex flex-col lg:flex-row gap-16 items-center"
+          className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-center justify-between"
         >
           {/* LEFT */}
-          <div className="flex-1 space-y-7 text-center lg:text-left z-10">
+          <div className="flex-1 space-y-7 text-center lg:text-left z-10 w-full">
 
             {/* Badge */}
             <motion.div variants={fadeUp} className="inline-flex justify-center lg:justify-start">
@@ -169,7 +170,7 @@ const Hero = () => {
                 fontFamily: "'DM Serif Display', Georgia, serif",
                 color: '#0f172a',
                 lineHeight: 1.07,
-                fontSize: 'clamp(2.7rem, 6vw, 5.2rem)',
+                fontSize: 'clamp(2.5rem, 5.5vw, 5.2rem)',
                 fontWeight: 400,
                 letterSpacing: '-0.025em',
               }}
@@ -201,8 +202,8 @@ const Hero = () => {
             {/* Body */}
             <motion.p
               variants={fadeUp}
-              style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.78, maxWidth: '460px', margin: '0 auto' }}
-              className="lg:mx-0"
+              style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.78, maxWidth: '460px' }}
+              className="mx-auto lg:mx-0"
             >
               Stop burning budget on ads that guess. We fuse consumer psychology with
               smart automation to turn cold clicks into predictable, compounding revenue.
@@ -221,7 +222,7 @@ const Hero = () => {
                   >
                     <Icon className="w-4 h-4" style={{ color: '#1d4ed8' }} />
                   </div>
-                  <div>
+                  <div className="text-left">
                     <div style={{ color: '#0f172a', fontWeight: 700, fontSize: '1.15rem', lineHeight: 1 }}>{value}</div>
                     <div style={{ color: '#94a3b8', fontSize: '0.72rem', marginTop: '3px' }}>{label}</div>
                   </div>
@@ -283,96 +284,12 @@ const Hero = () => {
             </motion.div>
           </div>
 
-          {/* RIGHT — Logo */}
-          <motion.div
-            variants={fadeUp}
-            className="flex-1 flex justify-center items-center relative"
-          >
-            {/* Halo */}
-            <div
-              className="absolute rounded-full pointer-events-none"
-              style={{
-                width: '380px',
-                height: '380px',
-                background: 'radial-gradient(circle, rgba(234,179,8,0.09) 0%, rgba(30,64,175,0.05) 55%, transparent 75%)',
-              }}
-            />
-
-            {/* Spinning dashed ring */}
-            <motion.svg
-              viewBox="0 0 340 340"
-              className="absolute pointer-events-none"
-              style={{ width: '340px', height: '340px', opacity: 0.18 }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}
-            >
-              <circle
-                cx="170" cy="170" r="158"
-                fill="none"
-                stroke="#1d4ed8"
-                strokeWidth="1"
-                strokeDasharray="6 14"
-                strokeLinecap="round"
-              />
-            </motion.svg>
-
-            {/* Counter-spinning outer ring */}
-            <motion.svg
-              viewBox="0 0 380 380"
-              className="absolute pointer-events-none"
-              style={{ width: '380px', height: '380px', opacity: 0.1 }}
-              animate={{ rotate: -360 }}
-              transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
-            >
-              <circle
-                cx="190" cy="190" r="178"
-                fill="none"
-                stroke="#eab308"
-                strokeWidth="1.5"
-                strokeDasharray="3 20"
-                strokeLinecap="round"
-              />
-            </motion.svg>
-
-            {/* Card */}
-            <div
-              className="relative flex items-center justify-center rounded-3xl p-10"
-              style={{
-                background: 'rgba(248,250,252,0.9)',
-                border: '1px solid rgba(30,64,175,0.09)',
-                boxShadow:
-                  '0 2px 4px rgba(0,0,0,0.02), 0 20px 60px rgba(30,64,175,0.08), inset 0 1px 0 rgba(255,255,255,1)',
-                backdropFilter: 'blur(12px)',
-              }}
-            >
-              {/* Corner accents */}
-              {[
-                { top: 14, left: 14 },
-                { top: 14, right: 14 },
-                { bottom: 14, left: 14 },
-                { bottom: 14, right: 14 },
-              ].map((pos, i) => (
-                <div
-                  key={i}
-                  className="absolute w-2 h-2 rounded-full"
-                  style={{ ...pos, background: i % 2 === 0 ? 'rgba(234,179,8,0.55)' : 'rgba(30,64,175,0.18)' }}
-                />
-              ))}
-
-              <motion.img
-                src={logo}
-                alt="MINDCLICK Logo"
-                className="object-contain"
-                style={{
-                  width: '260px',
-                  height: 'auto',
-                  filter: 'drop-shadow(0 6px 20px rgba(30,64,175,0.1))',
-                }}
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
-              />
+          {/* RIGHT — Robot Face with responsive scale wrapper */}
+          <div className="w-full lg:w-auto flex justify-center items-center flex-shrink-0 scale-90 sm:scale-95 lg:scale-100 -my-4 lg:my-0">
+            <div className="w-[260px] sm:w-[320px] lg:w-[380px]">
+              <RobotHeroFace />
             </div>
-          </motion.div>
+          </div>
         </motion.div>
       </div>
 

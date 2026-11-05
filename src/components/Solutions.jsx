@@ -1,298 +1,357 @@
-import React, { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Eye, Layers, Cpu, CheckCircle2 } from 'lucide-react';
+import React from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Eye, Layers, Cpu, Check } from 'lucide-react';
+
+/* Brand tokens — unchanged: navy, yellow, white */
+const NAVY = '#000047';
+const YELLOW = '#ffd600';
+const WHITE = '#ffffff';
+
+const EASE = [0.16, 1, 0.3, 1];
+const BODY = "'DM Sans', system-ui, sans-serif";
+const DISPLAY = "'Sugo Display', sans-serif";
+
+/* Helper: looping animation that switches off for reduced-motion users */
+const useLoop = () => {
+  const reduce = useReducedMotion();
+  return (animate, transition) => (reduce ? {} : { animate, transition: { repeat: Infinity, ease: 'easeInOut', ...transition } });
+};
 
 /* ─────────────────────────────────────────────
-   CARTOON SVG CHARACTERS  (all brand-colored)
+   MOTION GRAPHIC 1 — Distribution
+   Broadcast rings + bars rising + retention line drawing
 ───────────────────────────────────────────── */
+const DistributionGraphic = () => {
+  const loop = useLoop();
+  const heights = [44, 66, 58, 96, 124, 150, 184];
+  const bx = (i) => 62 + i * 44;
 
-const BrainCharacter = () => (
-  <svg viewBox="0 0 120 130" fill="none" xmlns="http://www.w3.org/2000/svg" width="120" height="130">
-    {/* Body */}
-    <ellipse cx="60" cy="72" rx="28" ry="32" fill="#000047" />
-    {/* Arms */}
-    <path d="M32 68 Q18 60 14 48" stroke="#000047" strokeWidth="7" strokeLinecap="round"/>
-    <path d="M88 68 Q102 60 106 48" stroke="#000047" strokeWidth="7" strokeLinecap="round"/>
-    {/* Hands */}
-    <circle cx="13" cy="45" r="7" fill="#ffd600"/>
-    <circle cx="107" cy="45" r="7" fill="#ffd600"/>
-    {/* Legs */}
-    <path d="M48 100 Q45 115 42 124" stroke="#000047" strokeWidth="7" strokeLinecap="round"/>
-    <path d="M72 100 Q75 115 78 124" stroke="#000047" strokeWidth="7" strokeLinecap="round"/>
-    {/* Feet */}
-    <ellipse cx="40" cy="126" rx="10" ry="5" fill="#ffd600"/>
-    <ellipse cx="80" cy="126" rx="10" ry="5" fill="#ffd600"/>
-    {/* Brain head */}
-    <ellipse cx="60" cy="38" rx="30" ry="26" fill="#ffd600"/>
-    {/* Brain folds */}
-    <path d="M38 32 Q44 24 52 30 Q58 20 66 28 Q74 18 80 28 Q86 22 88 32" stroke="#000047" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-    <path d="M36 40 Q42 48 52 42 Q58 50 66 42 Q72 50 82 42 Q86 36 90 40" stroke="#000047" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-    {/* Eyes */}
-    <circle cx="50" cy="35" r="5" fill="#000047"/>
-    <circle cx="70" cy="35" r="5" fill="#000047"/>
-    <circle cx="52" cy="33" r="2" fill="white"/>
-    <circle cx="72" cy="33" r="2" fill="white"/>
-    {/* Smile */}
-    <path d="M50 46 Q60 54 70 46" stroke="#000047" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-    {/* Blush */}
-    <ellipse cx="43" cy="42" rx="5" ry="3" fill="rgba(255,100,100,0.35)"/>
-    <ellipse cx="77" cy="42" rx="5" ry="3" fill="rgba(255,100,100,0.35)"/>
-    {/* Tie */}
-    <polygon points="60,56 55,68 60,72 65,68" fill="#ffd600"/>
-    <polygon points="57,56 63,56 61,62 59,62" fill="#ffd600"/>
-    <rect x="58" y="54" width="4" height="4" rx="1" fill="#ffd600"/>
-  </svg>
-);
-
-const RocketCharacter = () => (
-  <svg viewBox="0 0 90 150" fill="none" xmlns="http://www.w3.org/2000/svg" width="90" height="150">
-    {/* Flame */}
-    <ellipse cx="45" cy="138" rx="14" ry="10" fill="#ffd600" opacity="0.6"/>
-    <ellipse cx="45" cy="132" rx="10" ry="8" fill="#ffd600"/>
-    {/* Rocket body */}
-    <rect x="30" y="58" width="30" height="65" rx="6" fill="#000047"/>
-    {/* Nose cone */}
-    <path d="M30 58 Q45 10 60 58Z" fill="#000047"/>
-    {/* Yellow stripe */}
-    <rect x="30" y="80" width="30" height="8" fill="#ffd600"/>
-    {/* Window */}
-    <circle cx="45" cy="68" r="10" fill="white"/>
-    <circle cx="45" cy="68" r="7" fill="#ffd600"/>
-    {/* Face in window */}
-    <circle cx="43" cy="66" r="2" fill="#000047"/>
-    <circle cx="49" cy="66" r="2" fill="#000047"/>
-    <path d="M42 71 Q46 74 50 71" stroke="#000047" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-    {/* Fins */}
-    <path d="M30 105 L16 128 L30 120Z" fill="#ffd600"/>
-    <path d="M60 105 L74 128 L60 120Z" fill="#ffd600"/>
-    {/* Stars around rocket */}
-    <polygon points="10,40 11.8,45.5 17.6,45.5 12.9,48.9 14.7,54.4 10,51 5.3,54.4 7.1,48.9 2.4,45.5 8.2,45.5" fill="#ffd600" opacity="0.7" transform="scale(0.6) translate(5,5)"/>
-    <polygon points="78,20 79.2,23.6 83,23.6 80,25.8 81.2,29.4 78,27.2 74.8,29.4 76,25.8 73,23.6 76.8,23.6" fill="#ffd600" opacity="0.5"/>
-  </svg>
-);
-
-const GearCharacter = () => (
-  <svg viewBox="0 0 130 140" fill="none" xmlns="http://www.w3.org/2000/svg" width="130" height="140">
-    {/* Big gear body */}
-    <g transform="translate(65,55)">
-      {[0,30,60,90,120,150,180,210,240,270,300,330].map((deg, i) => (
-        <rect key={i} x="-6" y="-44" width="12" height="14" rx="3" fill="#000047"
-          transform={`rotate(${deg})`}/>
-      ))}
-      <circle r="38" fill="#000047"/>
-      <circle r="24" fill="#ffd600"/>
-      <circle r="10" fill="#000047"/>
-    </g>
-    {/* Face */}
-    <circle cx="58" cy="50" r="5" fill="white"/>
-    <circle cx="72" cy="50" r="5" fill="white"/>
-    <circle cx="60" cy="48" r="2" fill="#000047"/>
-    <circle cx="74" cy="48" r="2" fill="#000047"/>
-    <path d="M57 60 Q65 67 73 60" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-    {/* Legs */}
-    <rect x="52" y="90" width="10" height="30" rx="5" fill="#000047"/>
-    <rect x="68" y="90" width="10" height="30" rx="5" fill="#000047"/>
-    {/* Feet */}
-    <ellipse cx="57" cy="122" rx="11" ry="6" fill="#ffd600"/>
-    <ellipse cx="73" cy="122" rx="11" ry="6" fill="#ffd600"/>
-    {/* Arms */}
-    <rect x="22" y="62" width="28" height="10" rx="5" fill="#000047"/>
-    <rect x="80" y="62" width="28" height="10" rx="5" fill="#000047"/>
-    {/* Small gear hands */}
-    <circle cx="18" cy="67" r="10" fill="#ffd600"/>
-    <circle cx="18" cy="67" r="5" fill="#000047"/>
-    <circle cx="112" cy="67" r="10" fill="#ffd600"/>
-    <circle cx="112" cy="67" r="5" fill="#000047"/>
-  </svg>
-);
-
-const LightbulbCharacter = () => (
-  <svg viewBox="0 0 100 140" fill="none" xmlns="http://www.w3.org/2000/svg" width="100" height="140">
-    {/* Glow rings */}
-    <circle cx="50" cy="45" r="38" fill="rgba(255,214,0,0.12)"/>
-    <circle cx="50" cy="45" r="28" fill="rgba(255,214,0,0.18)"/>
-    {/* Bulb glass */}
-    <path d="M25 42 Q25 18 50 12 Q75 18 75 42 Q75 60 62 68 L62 78 L38 78 L38 68 Q25 60 25 42Z" fill="#ffd600"/>
-    {/* Filament inside */}
-    <path d="M40 50 Q45 42 50 50 Q55 42 60 50" stroke="#000047" strokeWidth="2" strokeLinecap="round" fill="none"/>
-    <line x1="50" y1="50" x2="50" y2="62" stroke="#000047" strokeWidth="2" strokeLinecap="round"/>
-    {/* Base rings */}
-    <rect x="36" y="78" width="28" height="7" rx="3" fill="#000047"/>
-    <rect x="38" y="85" width="24" height="7" rx="3" fill="#000047"/>
-    {/* Base cap */}
-    <rect x="38" y="92" width="24" height="5" rx="2.5" fill="#ffd600"/>
-    {/* Eyes */}
-    <circle cx="43" cy="40" r="5" fill="#000047"/>
-    <circle cx="57" cy="40" r="5" fill="#000047"/>
-    <circle cx="45" cy="38" r="2" fill="white"/>
-    <circle cx="59" cy="38" r="2" fill="white"/>
-    {/* Smile */}
-    <path d="M43 52 Q50 58 57 52" stroke="#000047" strokeWidth="2" strokeLinecap="round" fill="none"/>
-    {/* Legs */}
-    <path d="M44 97 Q41 114 38 124" stroke="#000047" strokeWidth="7" strokeLinecap="round"/>
-    <path d="M56 97 Q59 114 62 124" stroke="#000047" strokeWidth="7" strokeLinecap="round"/>
-    {/* Feet */}
-    <ellipse cx="36" cy="126" rx="10" ry="5" fill="#ffd600"/>
-    <ellipse cx="64" cy="126" rx="10" ry="5" fill="#ffd600"/>
-    {/* Shine lines */}
-    <line x1="78" y1="18" x2="86" y2="12" stroke="#ffd600" strokeWidth="2.5" strokeLinecap="round" opacity="0.8"/>
-    <line x1="82" y1="28" x2="92" y2="26" stroke="#ffd600" strokeWidth="2.5" strokeLinecap="round" opacity="0.6"/>
-    <line x1="22" y1="18" x2="14" y2="12" stroke="#ffd600" strokeWidth="2.5" strokeLinecap="round" opacity="0.8"/>
-    <line x1="18" y1="28" x2="8" y2="26" stroke="#ffd600" strokeWidth="2.5" strokeLinecap="round" opacity="0.6"/>
-  </svg>
-);
-
-const StarBurst = ({ size = 40 }) => (
-  <svg viewBox="0 0 60 60" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg">
-    <polygon points="30,4 34.7,22.3 53,22.3 38.6,33.7 43.4,52 30,40.6 16.6,52 21.4,33.7 7,22.3 25.3,22.3" fill="#ffd600"/>
-  </svg>
-);
-
-const FloatingDot = ({ size = 12, color = '#ffd600' }) => (
-  <svg viewBox="0 0 20 20" width={size} height={size} fill="none">
-    <circle cx="10" cy="10" r="8" fill={color} />
-  </svg>
-);
-
-/* ─────────────────────────────────────────────
-   BACKGROUND LAYER
-───────────────────────────────────────────── */
-const BackgroundCharacters = () => {
-  const items = [
-    { component: <BrainCharacter />,    top: '4%',  left: '2%',   rotate: '-8deg',  duration: 6,   delay: 0,   scale: 0.85, opacity: 0.13 },
-    { component: <RocketCharacter />,   top: '10%', right: '3%',  rotate: '10deg',  duration: 7,   delay: 1,   scale: 0.8,  opacity: 0.12 },
-    { component: <GearCharacter />,     top: '42%', left: '1%',   rotate: '-5deg',  duration: 8,   delay: 0.5, scale: 0.75, opacity: 0.11 },
-    { component: <LightbulbCharacter />,top: '55%', right: '2%',  rotate: '7deg',   duration: 6.5, delay: 1.5, scale: 0.8,  opacity: 0.12 },
-    { component: <BrainCharacter />,    top: '80%', left: '3%',   rotate: '12deg',  duration: 7.5, delay: 2,   scale: 0.7,  opacity: 0.09 },
-    { component: <RocketCharacter />,   top: '75%', right: '4%',  rotate: '-12deg', duration: 6,   delay: 0.8, scale: 0.7,  opacity: 0.10 },
-    { component: <StarBurst size={50} />, top: '20%', left: '14%', rotate: '20deg', duration: 5,   delay: 0,   scale: 1,    opacity: 0.18 },
-    { component: <StarBurst size={32} />, top: '65%', right: '12%',rotate: '-15deg',duration: 4.5, delay: 1.2, scale: 1,    opacity: 0.15 },
-    { component: <StarBurst size={24} />, top: '38%', right: '16%',rotate: '30deg', duration: 5.5, delay: 0.4, scale: 1,    opacity: 0.12 },
-    { component: <FloatingDot size={18} color="#ffd600" />, top: '30%', left: '10%', rotate: '0deg', duration: 4, delay: 0.3, scale: 1, opacity: 0.4 },
-    { component: <FloatingDot size={12} color="#000047" />, top: '50%', left: '18%', rotate: '0deg', duration: 5, delay: 1,   scale: 1, opacity: 0.2 },
-    { component: <FloatingDot size={14} color="#ffd600" />, top: '70%', right: '18%',rotate: '0deg', duration: 6, delay: 0.6, scale: 1, opacity: 0.35 },
-    { component: <FloatingDot size={10} color="#000047" />, top: '15%', right: '22%',rotate: '0deg', duration: 4.5,delay: 1.8,scale: 1, opacity: 0.2 },
-  ];
+  const linePath = heights
+    .map((h, i) => `${i === 0 ? 'M' : 'L'}${bx(i) + 11} ${244 - h}`)
+    .join(' ');
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {items.map((item, i) => (
-        <motion.div
+    <svg viewBox="0 0 400 300" className="w-full h-full" role="img" aria-label="Animated chart of audience growth">
+      {/* baseline */}
+      <line x1="44" y1="244" x2="360" y2="244" stroke={WHITE} strokeOpacity="0.25" strokeWidth="1.5" />
+
+      {/* broadcast rings */}
+      {[0, 1, 2].map((i) => (
+        <motion.circle
           key={i}
-          className="absolute"
-          style={{
-            top: item.top,
-            left: item.left,
-            right: item.right,
-            opacity: item.opacity,
-            transform: `rotate(${item.rotate}) scale(${item.scale})`,
-          }}
-          animate={{ y: [0, -16, 0], rotate: [item.rotate, `calc(${item.rotate} + 6deg)`, item.rotate] }}
-          transition={{ duration: item.duration, delay: item.delay, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          {item.component}
-        </motion.div>
+          cx="74"
+          cy="64"
+          r="12"
+          fill="none"
+          stroke={YELLOW}
+          strokeWidth="1.5"
+          {...loop({ r: [12, 52], opacity: [0.7, 0] }, { duration: 3, delay: i * 1, ease: 'easeOut' })}
+        />
       ))}
-    </div>
+      <circle cx="74" cy="64" r="16" fill={YELLOW} />
+      <path d="M69 57 L82 64 L69 71 Z" fill={NAVY} />
+
+      {/* bars */}
+      {heights.map((h, i) => (
+        <motion.rect
+          key={i}
+          x={bx(i)}
+          y={244 - h}
+          width="22"
+          height={h}
+          rx="5"
+          fill={i === heights.length - 1 ? YELLOW : WHITE}
+          fillOpacity={i === heights.length - 1 ? 1 : 0.16}
+          style={{ transformBox: 'fill-box', transformOrigin: '50% 100%' }}
+          {...loop({ scaleY: [0, 1, 1, 0] }, { duration: 6, delay: i * 0.1, times: [0, 0.3, 0.85, 1] })}
+        />
+      ))}
+
+      {/* trend line */}
+      <motion.path
+        d={linePath}
+        fill="none"
+        stroke={YELLOW}
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        {...loop({ pathLength: [0, 1, 1, 0] }, { duration: 6, delay: 0.4, times: [0, 0.4, 0.85, 1] })}
+      />
+
+      {/* end-point pulse */}
+      <motion.circle
+        cx={bx(6) + 11}
+        cy={244 - heights[6]}
+        r="6"
+        fill={WHITE}
+        {...loop({ opacity: [0, 0, 1, 1, 0], scale: [0.4, 0.4, 1, 1, 0.4] }, { duration: 6, delay: 0.4, times: [0, 0.38, 0.45, 0.85, 1] })}
+        style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+      />
+    </svg>
   );
 };
+
+/* ─────────────────────────────────────────────
+   MOTION GRAPHIC 2 — Website
+   Browser, cursor clicks CTA, new lead pops in
+───────────────────────────────────────────── */
+const WebsiteGraphic = () => {
+  const loop = useLoop();
+  const T = { duration: 5, times: [0, 0.2, 0.45, 0.52, 0.6, 0.9, 1] };
+
+  return (
+    <svg viewBox="0 0 400 300" className="w-full h-full" role="img" aria-label="Animated website converting a visitor into a lead">
+      {/* window */}
+      <rect x="44" y="40" width="312" height="220" rx="14" fill={WHITE} fillOpacity="0.07" stroke={WHITE} strokeOpacity="0.25" strokeWidth="1.5" />
+      <line x1="44" y1="68" x2="356" y2="68" stroke={WHITE} strokeOpacity="0.2" />
+      {[0, 1, 2].map((i) => (
+        <circle key={i} cx={62 + i * 14} cy="54" r="3.5" fill={i === 2 ? YELLOW : WHITE} fillOpacity={i === 2 ? 1 : 0.35} />
+      ))}
+
+      {/* headline skeleton, shimmering */}
+      {[
+        { y: 92, w: 150 },
+        { y: 108, w: 112 },
+        { y: 130, w: 96 },
+      ].map((l, i) => (
+        <motion.rect
+          key={i}
+          x="68"
+          y={l.y}
+          width={l.w}
+          height={i < 2 ? 9 : 6}
+          rx="3"
+          fill={WHITE}
+          fillOpacity="0.4"
+          {...loop({ fillOpacity: [0.2, 0.5, 0.2] }, { duration: 2.4, delay: i * 0.25 })}
+        />
+      ))}
+
+      {/* CTA button + pulse */}
+      <motion.rect
+        x="68"
+        y="156"
+        width="104"
+        height="34"
+        rx="17"
+        fill={YELLOW}
+        opacity="0.5"
+        style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+        {...loop({ scale: [1, 1.25], opacity: [0.5, 0] }, { duration: 1.8, ease: 'easeOut' })}
+      />
+      <motion.rect
+        x="68"
+        y="156"
+        width="104"
+        height="34"
+        rx="17"
+        fill={YELLOW}
+        style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+        {...loop({ scale: [1, 1, 1, 0.94, 1, 1, 1] }, T)}
+      />
+      <rect x="86" y="170" width="52" height="6" rx="3" fill={NAVY} />
+      <path d="M150 173 h10 m-4 -4 l4 4 l-4 4" stroke={NAVY} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+
+      {/* side cards */}
+      {[0, 1].map((i) => (
+        <rect key={i} x="212" y={90 + i * 62} width="120" height="50" rx="10" fill={WHITE} fillOpacity="0.1" />
+      ))}
+      <rect x="224" y="104" width="44" height="6" rx="3" fill={WHITE} fillOpacity="0.45" />
+      <rect x="224" y="118" width="70" height="6" rx="3" fill={WHITE} fillOpacity="0.25" />
+
+      {/* lead chip */}
+      <motion.g
+        {...loop(
+          { opacity: [0, 0, 0, 0, 1, 1, 0], y: [8, 8, 8, 8, 0, 0, 8] },
+          T
+        )}
+      >
+        <rect x="212" y="152" width="120" height="50" rx="10" fill={YELLOW} />
+        <circle cx="234" cy="177" r="10" fill={NAVY} />
+        <path d="M229.5 177.5 l3 3 l5.5 -6" stroke={YELLOW} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <rect x="252" y="170" width="64" height="6" rx="3" fill={NAVY} />
+        <rect x="252" y="182" width="40" height="5" rx="2.5" fill={NAVY} fillOpacity="0.5" />
+      </motion.g>
+
+      {/* cursor */}
+      <motion.g
+        {...loop(
+          { x: [300, 300, 118, 118, 118, 300, 300], y: [236, 236, 176, 176, 176, 236, 236] },
+          { ...T, ease: 'easeInOut' }
+        )}
+      >
+        <path d="M0 0 L0 20 L5.5 15 L9 23 L12.5 21.5 L9 14 L16 14 Z" fill={WHITE} stroke={NAVY} strokeWidth="1.5" strokeLinejoin="round" />
+      </motion.g>
+    </svg>
+  );
+};
+
+/* ─────────────────────────────────────────────
+   MOTION GRAPHIC 3 — IT infrastructure
+   Nodes linked by lines with data packets flowing
+───────────────────────────────────────────── */
+const InfraGraphic = () => {
+  const loop = useLoop();
+
+  const links = [
+    { x1: 78, y1: 150, x2: 150, y2: 150, d: 0 },
+    { x1: 190, y1: 150, x2: 250, y2: 92, d: 0.5 },
+    { x1: 190, y1: 150, x2: 250, y2: 208, d: 0.8 },
+    { x1: 290, y1: 92, x2: 336, y2: 142, d: 1.3 },
+    { x1: 290, y1: 208, x2: 336, y2: 158, d: 1.6 },
+  ];
+
+  const Node = ({ x, y, label, active }) => (
+    <g>
+      <rect
+        x={x - 40}
+        y={y - 22}
+        width="80"
+        height="44"
+        rx="12"
+        fill={active ? YELLOW : WHITE}
+        fillOpacity={active ? 1 : 0.1}
+        stroke={active ? 'none' : WHITE}
+        strokeOpacity="0.3"
+        strokeWidth="1.5"
+      />
+      <text
+        x={x}
+        y={y + 5}
+        textAnchor="middle"
+        fontFamily="'DM Sans', sans-serif"
+        fontWeight="700"
+        fontSize="13"
+        letterSpacing="1.2"
+        fill={active ? NAVY : WHITE}
+      >
+        {label}
+      </text>
+    </g>
+  );
+
+  return (
+    <svg viewBox="0 0 400 300" className="w-full h-full" role="img" aria-label="Animated data flowing between backend services">
+      {/* links */}
+      {links.map((l, i) => (
+        <line key={i} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke={WHITE} strokeOpacity="0.25" strokeWidth="1.5" strokeDasharray="4 5" />
+      ))}
+
+      {/* packets */}
+      {links.map((l, i) => (
+        <motion.circle
+          key={i}
+          r="4.5"
+          fill={YELLOW}
+          initial={{ cx: l.x1, cy: l.y1, opacity: 0 }}
+          {...loop(
+            { cx: [l.x1, l.x2], cy: [l.y1, l.y2], opacity: [0, 1, 1, 0] },
+            { duration: 1.6, delay: l.d, repeatDelay: 1.2, ease: 'linear', times: [0, 0.1, 0.9, 1] }
+          )}
+        />
+      ))}
+
+      {/* nodes */}
+      <Node x={46} y={150} label="APP" />
+      <Node x={170} y={150} label="API" active />
+      <Node x={270} y={92} label="DATA" />
+      <Node x={270} y={208} label="CLOUD" />
+      <Node x={356} y={150} label="SYNC" />
+
+      {/* heartbeat on the API node */}
+      <motion.rect
+        x="130"
+        y="128"
+        width="80"
+        height="44"
+        rx="12"
+        fill="none"
+        stroke={YELLOW}
+        strokeWidth="1.5"
+        style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+        {...loop({ scale: [1, 1.35], opacity: [0.8, 0] }, { duration: 2.4, ease: 'easeOut' })}
+      />
+    </svg>
+  );
+};
+
+/* ─────────────────────────────────────────────
+   DATA
+───────────────────────────────────────────── */
+const frameworks = [
+  {
+    icon: Eye,
+    tag: 'Visibility Architecture',
+    title: 'ORGANIC BRAND DISTRIBUTION SYSTEMS',
+    description:
+      "We don't just post content; we engineer algorithmic distribution. We design precise platform setups and focused organic content engines (including high-retention TikTok pipelines) to secure your unique brand identity.",
+    bullets: [
+      'High-retention video structures',
+      'TikTok & social growth frameworks',
+      'Algorithmic trend matching analytics',
+    ],
+    Graphic: DistributionGraphic,
+  },
+  {
+    icon: Layers,
+    tag: 'Value Engineering',
+    title: 'CUSTOMER-CONVERTING WEBSITES',
+    description:
+      "We eliminate flat digital business cards. Our team builds high-speed frontend architectures structured explicitly around your brand's unique value statement, turning passive scrollers into high-intent active leads.",
+    bullets: [
+      'Distinct brand value positioning',
+      'High-conversion CTA engineering',
+      'Sub-second UX responsiveness',
+    ],
+    Graphic: WebsiteGraphic,
+  },
+  {
+    icon: Cpu,
+    tag: 'Core IT Infrastructure',
+    title: 'EXTERNAL IT DEVELOPMENT PARTNERSHIP',
+    description:
+      'Hand over the heavy lifting of backend infrastructure. We step in as your primary software engineering team, structuring scalable databases, clean API management integrations, and zero-downtime cloud pipelines.',
+    bullets: [
+      'Robust backend system deployment',
+      'Multi-tenant database scaling architectures',
+      'Seamless cross-platform API sync',
+    ],
+    Graphic: InfraGraphic,
+  },
+];
 
 /* ─────────────────────────────────────────────
    MAIN COMPONENT
 ───────────────────────────────────────────── */
 const Solutions = () => {
-  const frameworks = [
-    {
-      icon: Eye,
-      tag: 'Visibility Architecture',
-      title: 'ORGANIC BRAND DISTRIBUTION SYSTEMS',
-      description:
-        "We don't just post content; we engineer algorithmic distribution. We design precise platform setups and focused organic content engines (including high-retention TikTok pipelines) to secure your unique brand identity.",
-      bullets: [
-        'High-retention video structures',
-        'TikTok & social growth frameworks',
-        'Algorithmic trend matching analytics',
-      ],
-    },
-    {
-      icon: Layers,
-      tag: 'Value Engineering',
-      title: 'CUSTOMER-CONVERTING WEBSITES',
-      description:
-        "We eliminate flat digital business cards. Our team builds high-speed frontend architectures structured explicitly around your brand's unique value statement, turning passive scrollers into high-intent active leads.",
-      bullets: [
-        'Distinct brand value positioning',
-        'High-conversion CTA engineering',
-        'Sub-second UX responsiveness',
-      ],
-    },
-    {
-      icon: Cpu,
-      tag: 'Core IT Infrastructure',
-      title: 'EXTERNAL IT DEVELOPMENT PARTNERSHIP',
-      description:
-        'Hand over the heavy lifting of backend infrastructure. We step in as your primary software engineering team, structuring scalable databases, clean API management integrations, and zero-downtime cloud pipelines.',
-      bullets: [
-        'Robust backend system deployment',
-        'Multi-tenant database scaling architectures',
-        'Seamless cross-platform API sync',
-      ],
-    },
-  ];
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 42 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } },
-  };
-
   return (
     <section
       className="relative overflow-hidden py-20 lg:py-32"
-      style={{ background: '#ffffff', fontFamily: "'Sugo Display', sans-serif", borderTop: '1px solid rgba(0,0,71,0.06)' }}
+      style={{ background: WHITE, fontFamily: DISPLAY }}
     >
-      {/* Cartoon background */}
-      <BackgroundCharacters />
-
-      {/* Subtle dot grid overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(0,0,71,0.07) 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
-          opacity: 0.6,
-        }}
-      />
-
-      {/* Top rule */}
+      {/* thin brand rule */}
       <div
         className="absolute top-0 left-0 right-0 h-[3px] pointer-events-none"
-        style={{ background: 'linear-gradient(90deg, transparent, #ffd600 40%, rgba(0,0,71,0.4) 70%, transparent)' }}
+        style={{ background: `linear-gradient(90deg, transparent, ${YELLOW} 40%, rgba(0,0,71,0.4) 70%, transparent)` }}
       />
 
-      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 relative z-10">
-
+      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 relative">
         {/* ── Header ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          viewport={{ once: true, margin: '-60px' }}
-          className="max-w-3xl mb-16 lg:mb-24"
-        >
-          <div className="flex items-center gap-3 mb-5">
-            <span
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase"
-              style={{ background: '#ffd600', color: '#000047', fontFamily: "'DM Sans', sans-serif" }}
-            >
-              Our Fixes
-            </span>
-            <div style={{ height: '2px', width: '36px', background: '#000047', borderRadius: '2px', opacity: 0.2 }} />
-          </div>
+        <div className="max-w-3xl mb-16 lg:mb-28">
+          <motion.span
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: EASE }}
+            className="inline-block px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-6"
+            style={{ background: YELLOW, color: NAVY, fontFamily: BODY }}
+          >
+            Our Fixes
+          </motion.span>
 
           <h2
             style={{
-              fontFamily: "'Sugo Display', sans-serif",
-              color: '#000047',
+              color: NAVY,
               fontSize: 'clamp(2.2rem, 5vw, 4rem)',
               fontWeight: 700,
               lineHeight: 1.07,
@@ -300,84 +359,100 @@ const Solutions = () => {
               textTransform: 'uppercase',
             }}
           >
-            WE BUILD INTEGRATED
-            <br />
-            <span
-              style={{
-                background: '#ffd600',
-                color: '#000047',
-                padding: '2px 14px 4px',
-                display: 'inline-block',
-                transform: 'skewX(-2deg)',
-                borderRadius: '4px',
-              }}
+            <motion.span
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease: EASE }}
+              style={{ display: 'block' }}
             >
-              GROWTH MACHINES
+              We build integrated
+            </motion.span>
+            <span style={{ display: 'inline-block', position: 'relative', marginTop: 6 }}>
+              {/* yellow highlight wipes in left → right */}
+              <motion.span
+                aria-hidden
+                initial={{ scaleX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3, duration: 0.8, ease: EASE }}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: YELLOW,
+                  borderRadius: 4,
+                  transformOrigin: 'left center',
+                }}
+              />
+              <motion.span
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                style={{ position: 'relative', display: 'inline-block', padding: '2px 14px 4px' }}
+              >
+                Growth machines
+              </motion.span>
             </span>
           </h2>
 
-          <p
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 0.65 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.6, duration: 0.8 }}
             style={{
-              color: '#000047',
-              opacity: 0.6,
+              color: NAVY,
               fontSize: '1.05rem',
               lineHeight: 1.75,
-              marginTop: '18px',
-              maxWidth: '500px',
-              fontFamily: "'DM Sans', system-ui, sans-serif",
+              marginTop: 20,
+              maxWidth: 520,
+              fontFamily: BODY,
               fontWeight: 500,
             }}
           >
             A weak identity or a broken application slows expansion. We run{' '}
-            <span style={{ color: '#000047', opacity: 1, fontWeight: 700 }}>three technological pillars</span>{' '}
-            to maximise your company&apos;s potential.
-          </p>
-        </motion.div>
+            <strong style={{ fontWeight: 700 }}>three technological pillars</strong> to maximise
+            your company&apos;s potential.
+          </motion.p>
+        </div>
 
-        {/* ── Framework Pillars ── */}
-        <div className="space-y-10 lg:space-y-14">
+        {/* ── Pillars ── */}
+        <div className="space-y-20 lg:space-y-32">
           {frameworks.map((pillar, index) => {
             const Icon = pillar.icon;
+            const Graphic = pillar.Graphic;
             const flipped = index % 2 === 1;
-            return (
-              <motion.div
-                key={index}
-                variants={cardVariants}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: '-80px' }}
-                className={`flex flex-col lg:flex-row gap-6 lg:gap-10 items-stretch ${flipped ? 'lg:flex-row-reverse' : ''}`}
-              >
-                {/* ── Text side ── */}
-                <div
-                  className="flex-1 rounded-3xl p-8 flex flex-col justify-center relative overflow-hidden"
-                  style={{
-                    background: '#000047',
-                    boxShadow: '0 8px 40px rgba(0,0,71,0.15)',
-                  }}
-                >
-                  {/* Cartoon character watermark inside card */}
-                  <div className="absolute bottom-0 right-4 opacity-[0.07] pointer-events-none select-none" style={{ transform: 'scale(1.1)', transformOrigin: 'bottom right' }}>
-                    {index === 0 ? <BrainCharacter /> : index === 1 ? <LightbulbCharacter /> : <GearCharacter />}
-                  </div>
 
-                  {/* Tag */}
+            return (
+              <div
+                key={pillar.title}
+                className={`grid gap-8 lg:gap-16 items-center lg:grid-cols-2`}
+              >
+                {/* Text */}
+                <motion.div
+                  initial={{ opacity: 0, x: flipped ? 32 : -32 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: '-80px' }}
+                  transition={{ duration: 0.8, ease: EASE }}
+                  className={flipped ? 'lg:order-2' : ''}
+                >
                   <div className="flex items-center gap-3 mb-5">
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: '#ffd600' }}
+                      style={{ background: NAVY }}
                     >
-                      <Icon className="w-5 h-5" style={{ color: '#000047' }} />
+                      <Icon className="w-5 h-5" style={{ color: YELLOW }} />
                     </div>
                     <span
                       style={{
-                        fontSize: '0.68rem',
+                        fontSize: '0.72rem',
                         fontWeight: 700,
                         letterSpacing: '0.12em',
-                        color: '#ffd600',
-                        opacity: 0.75,
+                        color: NAVY,
+                        opacity: 0.55,
                         textTransform: 'uppercase',
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: BODY,
                       }}
                     >
                       {pillar.tag}
@@ -386,14 +461,13 @@ const Solutions = () => {
 
                   <h3
                     style={{
-                      fontFamily: "'Sugo Display', sans-serif",
-                      color: 'white',
-                      fontSize: 'clamp(1.3rem, 2.5vw, 1.75rem)',
+                      color: NAVY,
+                      fontSize: 'clamp(1.5rem, 2.8vw, 2.1rem)',
                       fontWeight: 700,
                       textTransform: 'uppercase',
-                      lineHeight: 1.15,
-                      marginBottom: '14px',
-                      letterSpacing: '0.01em',
+                      lineHeight: 1.12,
+                      marginBottom: 16,
+                      letterSpacing: '0.005em',
                     }}
                   >
                     {pillar.title}
@@ -401,115 +475,71 @@ const Solutions = () => {
 
                   <p
                     style={{
-                      color: 'rgba(255,255,255,0.65)',
-                      fontSize: '0.93rem',
-                      lineHeight: 1.78,
-                      fontFamily: "'DM Sans', system-ui, sans-serif",
-                      maxWidth: '420px',
+                      color: NAVY,
+                      opacity: 0.68,
+                      fontSize: '1rem',
+                      lineHeight: 1.75,
+                      fontFamily: BODY,
+                      maxWidth: 480,
                     }}
                   >
                     {pillar.description}
                   </p>
 
-                  {/* Yellow accent bar */}
-                  <div
-                    style={{ height: '3px', width: '48px', background: '#ffd600', borderRadius: '2px', marginTop: '24px', opacity: 0.7 }}
-                  />
-                </div>
-
-                {/* ── Bullets side ── */}
-                <div
-                  className="flex-1 rounded-3xl p-8 flex flex-col justify-center relative overflow-hidden"
-                  style={{
-                    background: '#fff',
-                    border: '2px solid rgba(0,0,71,0.1)',
-                    boxShadow: '0 4px 24px rgba(0,0,71,0.05)',
-                  }}
-                >
-                  {/* Top yellow strip */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: '32px',
-                      right: '32px',
-                      height: '4px',
-                      background: '#ffd600',
-                      borderRadius: '0 0 4px 4px',
-                    }}
-                  />
-
-                  {/* Index number watermark */}
-                  <div
-                    className="absolute bottom-4 right-6 select-none pointer-events-none"
-                    style={{
-                      fontFamily: "'Sugo Display', sans-serif",
-                      fontSize: '7rem',
-                      fontWeight: 900,
-                      color: 'rgba(0,0,71,0.04)',
-                      lineHeight: 1,
-                    }}
-                  >
-                    0{index + 1}
-                  </div>
-
-                  <p
-                    style={{
-                      fontSize: '0.68rem',
-                      fontWeight: 800,
-                      letterSpacing: '0.14em',
-                      color: '#000047',
-                      opacity: 0.4,
-                      textTransform: 'uppercase',
-                      fontFamily: "'DM Sans', sans-serif",
-                      marginBottom: '20px',
-                    }}
-                  >
-                    Key Deliverable Targets
-                  </p>
-
-                  <ul className="space-y-5 relative z-10">
+                  <ul className="mt-8 space-y-3">
                     {pillar.bullets.map((bullet, idx) => (
                       <motion.li
-                        key={idx}
-                        initial={{ opacity: 0, x: flipped ? 20 : -20 }}
+                        key={bullet}
+                        initial={{ opacity: 0, x: -14 }}
                         whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.15 + idx * 0.1, duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
                         viewport={{ once: true }}
-                        className="flex items-start gap-4"
+                        transition={{ delay: 0.25 + idx * 0.1, duration: 0.5, ease: EASE }}
+                        className="flex items-center gap-3"
                       >
                         <span
-                          className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5"
-                          style={{ background: '#ffd600' }}
+                          className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center"
+                          style={{ background: YELLOW }}
                         >
-                          <CheckCircle2 className="w-4 h-4" style={{ color: '#000047' }} />
+                          <Check className="w-3.5 h-3.5" strokeWidth={3} style={{ color: NAVY }} />
                         </span>
-                        <span
-                          style={{
-                            color: '#000047',
-                            fontWeight: 600,
-                            fontSize: '0.95rem',
-                            lineHeight: 1.5,
-                            fontFamily: "'DM Sans', system-ui, sans-serif",
-                          }}
-                        >
+                        <span style={{ color: NAVY, fontWeight: 600, fontSize: '0.95rem', fontFamily: BODY }}>
                           {bullet}
                         </span>
                       </motion.li>
                     ))}
                   </ul>
-                </div>
-              </motion.div>
+                </motion.div>
+
+                {/* Motion graphic panel */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, margin: '-80px' }}
+                  transition={{ duration: 0.9, ease: EASE }}
+                  className={`relative rounded-3xl overflow-hidden ${flipped ? 'lg:order-1' : ''}`}
+                  style={{
+                    background: NAVY,
+                    aspectRatio: '4 / 3',
+                    boxShadow: '0 20px 50px rgba(0,0,71,0.18)',
+                  }}
+                >
+                  {/* quiet dot grid inside the panel */}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      backgroundImage: 'radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)',
+                      backgroundSize: '24px 24px',
+                    }}
+                  />
+                  <div className="absolute inset-0 p-4 sm:p-6">
+                    <Graphic />
+                  </div>
+                </motion.div>
+              </div>
             );
           })}
         </div>
       </div>
-
-      {/* Bottom vignette */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
-        style={{ background: 'linear-gradient(to top, rgba(255,255,255,0.6), transparent)' }}
-      />
     </section>
   );
 };

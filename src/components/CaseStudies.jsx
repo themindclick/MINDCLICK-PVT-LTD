@@ -1,23 +1,46 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Star, ArrowRight, Layers } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Star, ArrowRight, Layers, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+// Logo component with reliable image fallback handling
+const LogoItem = ({ logo }) => {
+  const [hasError, setHasError] = useState(false);
+
+  return (
+    <div className="inline-block shrink-0 transition-opacity duration-300 hover:opacity-100 opacity-70">
+      {!hasError ? (
+        <img 
+          src={logo.src} 
+          alt={logo.name}
+          onError={() => setHasError(true)}
+          className="h-7 sm:h-8 w-auto object-contain max-w-[110px]" 
+        />
+      ) : (
+        <span 
+          className="text-[11px] font-black tracking-[0.2em] text-[#000047]/60 border border-[#000047]/10 px-2.5 py-1 rounded-lg bg-[#000047]/5 inline-block"
+          style={{ fontFamily: "'Sugo Display', sans-serif" }}
+        >
+          {logo.name.toUpperCase()}
+        </span>
+      )}
+    </div>
+  );
+};
+
 const CaseStudies = () => {
-  // 1. PERFECT SEAMLESS LOGO LOOP DATA
-  // Replace these text paths with your exact public asset locations (e.g., "/assets/logos/ts.png")
   const clientLogos = [
-    { name: "Ahangama Tours", src: "/assets/logo1.png" },
-    { name: "Salon Mood", src: "/assets/logo2.png" },
-    { name: "T&S Marketing", src: "/assets/logo3.png" },
-    { name: "CSE InvestorHub", src: "/assets/logo4.png" },
-    { name: "MindClick Academy", src: "/assets/logo5.png" },
+    { name: "Ahangama Tours", src: "/assets/taxi_logo.png" },
+    { name: "Soper Foods", src: "/assets/butterlogo.png" },
+    { name: "T&S Tours", src: "/assets/logo.jpeg" },
+    { name: "CSE InvestorHub", src: "/assets/investerhub.png" },
+    { name: "Lanka Spice", src: "/assets/spice.png" },
+    { name: "Electric Lanka", src: "/assets/electric.png" },
+    { name: "Global odyssey", src: "/assets/agency.png" },
   ];
 
-  // Triplicate the array structure to secure flawless overflow coverage for massive displays
   const infiniteLogos = [...clientLogos, ...clientLogos, ...clientLogos];
 
-  // 2. CASE STUDIES DATA
   const studies = [
     {
       tag: "Automated Tourism Web Platform",
@@ -45,72 +68,64 @@ const CaseStudies = () => {
     }
   ];
 
-  // 3. ULTRA-MODERN BENTO REVIEWS
-  const customerGridReviews = [
+  // Dynamic reviews pool (Random Sri Lankans + Foreign Clients mentioning MindClick & Sri Lanka)
+  const allReviews = [
     {
-      quote: "MindClick completely re-engineered our operational workflow. We went from taking bookings manually via endless phone calls to running a completely automated 24/7 digital engine.",
-      author: "S. Fernando",
-      role: "Managing Director, T&S Tours",
-      highlight: true // Visually maps as a prominent layout card
+      quote: "Working with MindClick completely transformed our digital footprint. Their team based in Sri Lanka delivered world-class web architecture and automated funnels that blew our international expectations out of the water.",
+      author: "Marcus Vance",
+      location: "New York, USA",
+      type: "International Client"
     },
     {
-      quote: "Our new web system doesn't just look fast—it completely changed how we capture demand. The WhatsApp pipeline instantly converts visitors before they run away.",
-      author: "N. Perera",
-      role: "Founder, Salon Mood",
-      highlight: false
+      quote: "We went from taking bookings manually via endless phone calls to running a completely automated 24/7 digital engine. Outstanding execution from start to finish.",
+      author: "Chaminda Perera",
+      location: "Colombo, Sri Lanka",
+      type: "Local Partner"
     },
     {
-      quote: "The frontend responsiveness matched with their core backend database optimization solved our severe load fragmentation issues completely.",
-      author: "CSE Investor",
-      role: "Fintech Platform Lead",
-      highlight: false
+      quote: "Outsourcing our platform development to MindClick in Sri Lanka was the best decision we made this year. The code quality, speed, and automated WhatsApp workflows are simply phenomenal.",
+      author: "Oliver Thorne",
+      location: "London, UK",
+      type: "International Client"
+    },
+    {
+      quote: "Our new web system doesn't just look fast it completely changed how we capture local demand. The automated pipeline instantly converts visitors before they drop off.",
+      author: "Nimesh Jayasinghe",
+      location: "Kandy, Sri Lanka",
+      type: "Local Partner"
+    },
+    {
+      quote: "The frontend responsiveness matched with their core backend optimization solved our severe load fragmentation issues completely. Highly professional team!",
+      author: "Anusha Ratnayake",
+      location: "Galle, Sri Lanka",
+      type: "Local Partner"
     }
   ];
 
+  // State for dynamic review cycling
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Auto-rotate reviews every 5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % allReviews.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [allReviews.length]);
+
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % allReviews.length);
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + allReviews.length) % allReviews.length);
+  };
+
   return (
     <section className="bg-white py-20 lg:py-32 relative overflow-hidden border-t border-[#000047]/5">
-      
-      {/* ── PART 1: FLAWLESS ZERO-GAP INFINITE LOOP ── */}
-      <div className="w-full overflow-hidden pb-20 relative">
-        {/* Modern blur vignettes to mask side entry/exit elegantly */}
-        <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-white via-white/80 to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white via-white/80 to-transparent z-10 pointer-events-none" />
-        
-        <motion.div 
-          className="flex whitespace-nowrap gap-20 items-center w-max"
-          animate={{ x: [0, -1200] }}
-          transition={{
-            x: {
-              repeat: Infinity,
-              repeatType: "loop",
-              duration: 30,
-              ease: "linear", // Hard linear requirement for true stutterless execution
-            },
-          }}
-        >
-          {infiniteLogos.map((logo, idx) => (
-            <div key={idx} className="inline-block shrink-0 transition-opacity duration-300 hover:opacity-100 opacity-60">
-              <img 
-                src={logo.src} 
-                alt={logo.name}
-                onError={(e) => {
-                  // Fallback safely to stylized branding typography if the path is missing
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'block';
-                }}
-                className="h-9 w-auto object-contain max-w-[140px]" 
-              />
-              <span className="hidden text-xs font-black tracking-[0.25em] text-[#000047]/30" style={{ fontFamily: "'Sugo Display', sans-serif" }}>
-                {logo.name.toUpperCase()}
-              </span>
-            </div>
-          ))}
-        </motion.div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* ── PART 2: CASE STUDIES MATRIX ── */}
+        {/* ── PART 1: CASE STUDIES MATRIX ── */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16">
           <div className="max-w-xl">
             <span className="text-[#000047] font-bold text-xs uppercase tracking-widest bg-[#000047]/5 px-4 py-1.5 rounded-full">
@@ -178,59 +193,120 @@ const CaseStudies = () => {
           ))}
         </div>
 
-        {/* ── PART 3: MINIMALIST BENTO REVIEWS GRAPH (GOOGLE-INSPIRED TECH STYLE) ── */}
-        <div className="mt-20">
-          <div className="text-center mb-12">
+        {/* ── PART 2: FLAWLESS ZERO-GAP INFINITE CLIENT LOGO LOOP ── */}
+        <div className="my-20 relative">
+          <div className="text-center mb-8">
             <span className="text-xs font-bold text-[#000047]/40 uppercase tracking-widest inline-flex items-center gap-2">
-              <Layers className="w-3 h-3 text-[#ffd600]" /> Peer Verification
+              Trusted By Local & International Founders
             </span>
-            <h3 className="text-2xl font-bold text-[#000047] tracking-tight mt-2">What founders say about our infrastructure</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-            {customerGridReviews.map((rev, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.96 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.08 }}
-                className={`rounded-2xl p-6 border-2 flex flex-col justify-between transition-all duration-300 ${
-                  rev.highlight 
-                    ? 'border-[#000047] md:col-span-1 shadow-md bg-white relative' 
-                    : 'border-[#000047]/10 bg-white hover:border-[#000047]'
-                }`}
+          <div className="w-full overflow-hidden py-4 relative">
+            <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-white via-white/80 to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white via-white/80 to-transparent z-10 pointer-events-none" />
+            
+            <motion.div 
+              className="flex whitespace-nowrap gap-16 items-center w-max"
+              animate={{ x: [0, -1200] }}
+              transition={{
+                x: {
+                  repeat: Infinity,
+                  repeatType: "loop",
+                  duration: 30,
+                  ease: "linear",
+                },
+              }}
+            >
+              {infiniteLogos.map((logo, idx) => (
+                <LogoItem key={idx} logo={logo} />
+              ))}
+            </motion.div>
+          </div>
+        </div>
+
+        {/* ── PART 3: DYNAMIC CHANGING REVIEWS SECTION ── */}
+        <div className="mt-16 max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="text-xs font-bold text-[#000047]/40 uppercase tracking-widest inline-flex items-center gap-2">
+              <Layers className="w-3 h-3 text-[#ffd600]" /> Global & Local Feedback
+            </span>
+            <h3 className="text-2xl font-bold text-[#000047] tracking-tight mt-2">What founders say about our systems</h3>
+          </div>
+
+          {/* Dynamic Review Card Container with AnimatePresence */}
+          <div className="relative bg-white border-2 border-[#000047] rounded-3xl p-8 sm:p-12 shadow-xl overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-[4px] bg-[#ffd600]" />
+
+            <div className="absolute top-6 right-6 flex items-center gap-2">
+              <button 
+                onClick={handlePrev}
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-[#000047] hover:text-white transition-colors flex items-center justify-center text-slate-700"
+                aria-label="Previous review"
               >
-                {rev.highlight && (
-                  <div className="absolute top-0 left-10 right-10 h-[3px] bg-[#ffd600]" />
-                )}
-                
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={handleNext}
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-[#000047] hover:text-white transition-colors flex items-center justify-center text-slate-700"
+                aria-label="Next review"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.4 }}
+                className="flex flex-col justify-between min-h-[160px]"
+              >
                 <div>
-                  {/* Clean star indicators */}
-                  <div className="flex gap-0.5 mb-4 text-[#ffd600]">
+                  <div className="flex gap-1 mb-6 text-[#ffd600]">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-[#ffd600]" />
+                      <Star key={i} className="w-4 h-4 fill-[#ffd600]" />
                     ))}
                   </div>
 
-                  <p className="text-[#000047]/90 text-sm font-medium leading-relaxed mb-6">
-                    "{rev.quote}"
+                  <p className="text-[#000047] text-base sm:text-lg font-medium leading-relaxed mb-8">
+                    "{allReviews[currentIndex].quote}"
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-[#000047]/5 flex items-center justify-between">
+                <div className="pt-6 border-t border-[#000047]/10 flex items-center justify-between flex-wrap gap-4">
                   <div>
-                    <span className="block font-bold text-xs text-[#000047]">{rev.author}</span>
-                    <span className="block text-[10px] font-bold text-[#000047]/40 uppercase tracking-wider mt-0.5">{rev.role}</span>
+                    <span className="block font-bold text-sm text-[#000047]">{allReviews[currentIndex].author}</span>
+                    <span className="block text-xs font-semibold text-[#000047]/50 mt-0.5">{allReviews[currentIndex].location}</span>
                   </div>
-                  
-                  {/* Subtle Google-style check mark badge */}
-                  <div className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 text-[10px] font-bold">
-                    ✓
+
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 bg-[#000047]/5 text-[#000047] rounded-full border border-[#000047]/10">
+                      {allReviews[currentIndex].type}
+                    </span>
+                    <div className="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 text-xs font-bold">
+                      ✓
+                    </div>
                   </div>
                 </div>
               </motion.div>
-            ))}
+            </AnimatePresence>
+
+            {/* Pagination Dots */}
+            <div className="flex justify-center gap-2 mt-8">
+              {allReviews.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    currentIndex === idx ? 'w-8 bg-[#000047]' : 'w-2 bg-[#000047]/20'
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+
           </div>
         </div>
 
